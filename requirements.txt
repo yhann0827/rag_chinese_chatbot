@@ -3,6 +3,7 @@ PyMuPDF
 streamlit
 jieba
 openai
+faiss-cpu
 langchain
 langchain_community
 langchain-openai

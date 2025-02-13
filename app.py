@@ -14,7 +14,7 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 VECTORSTORE_PATH = "faiss_vectorstore"
 
-prompt_template = """
+base_prompt_template = """
 你是一个聪明、善于思考的AI助手，不仅能从数据中学习，还能分析和推理，像一个真正的对话伙伴一样交流。  
 
 过去的对话记录：{previous_chat_history}  
@@ -24,8 +24,7 @@ prompt_template = """
 你的任务：
 - 不要直接复制数据集内容，而是用自己的理解进行总结和推理。
 - 可以基于数据集的知识进行拓展，但不得偏离事实。
-- 你可以结合自己的推理和外部常识来回答问题，而不仅仅局限于数据集。 
-
+- 你可以结合自己的推理和外部常识来回答问题，而不仅仅局限于数据集。
 """
 
 def extract_text_from_pdfs(folder_path):
@@ -69,10 +68,10 @@ def load_or_create_vectorstore():
     chunks = get_text_chunks(text)  # Split once
     return get_vectorstore(chunks)  # Save and return FAISS
 
-
-def generate_response(question, chat_history, conversation_chain):
+def generate_response(question, chat_history, conversation_chain, additional_prompt):
     previous_chat_history = "\n".join([f"{message['role']}:{message['content']}" for message in chat_history])
-    formatted_prompt = prompt_template.format(previous_chat_history=previous_chat_history, question=question)
+    full_prompt = base_prompt_template + additional_prompt
+    formatted_prompt = full_prompt.format(previous_chat_history=previous_chat_history, question=question)
     response = conversation_chain.invoke(formatted_prompt)
     return response["answer"]
 
@@ -113,6 +112,9 @@ def main():
     top_p = st.sidebar.number_input("Top-p (0.0 - 1.0)", min_value=0.0, max_value=1.0, value=1.0, step=0.01)
     frequency_penalty = st.sidebar.number_input("Frequency Penalty (-2.0 to 2.0)", min_value=-2.0, max_value=2.0, value=0.0, step=0.1)
 
+    # Text area for additional instructions
+    additional_prompt = st.sidebar.text_area("Additional Instructions (Optional)", "", height=150)
+    
     # Load or create vector store (runs only once)
     vectorstore = load_or_create_vectorstore()
     
@@ -130,9 +132,10 @@ def main():
     if prompt:
         st.chat_message("user").write(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
-        response = generate_response(prompt, st.session_state.messages, conversation_chain)
+        response = generate_response(prompt, st.session_state.messages, conversation_chain, additional_prompt)
         st.chat_message("assistant").write(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main()
+

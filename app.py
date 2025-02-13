@@ -93,7 +93,6 @@ def get_conversation_memory(vectorstore, model, temperature, max_tokens, top_p, 
     return conversation_chain
 
 def main():
-    st.set_page_config(page_title="RAG Chatbot", page_icon=":books:")
     st.header("RAG Chatbot :books:")
 
     if st.button("Reset Chat"):

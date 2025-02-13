@@ -93,6 +93,7 @@ def get_conversation_memory(vectorstore, model, temperature, max_tokens, top_p, 
     return conversation_chain
 
 def main():
+    st.set_page_config(page_title="RAG Chatbot", page_icon=":books:")
     st.header("RAG Chatbot :books:")
 
     if st.button("Reset Chat"):
@@ -128,9 +129,6 @@ def main():
         response = generate_response(prompt, st.session_state.messages, conversation_chain)
         st.chat_message("assistant").write(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
-
-if __name__ == "__main__":
-    main()
 
 if __name__ == "__main__":
     main()

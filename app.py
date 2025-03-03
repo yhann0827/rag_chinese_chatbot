@@ -100,7 +100,7 @@ def main():
     st.set_page_config(page_title="RAG Chatbot", page_icon=":books:")
     st.header("RAG Chatbot :books:")
 
-    if st.button("Reset Chat"):
+    if st.sidebar.button("Reset Chat"):
         st.session_state["messages"] = [{"role": "assistant", "content": "你好！有什么我可以帮助你的吗？"}]
         st.rerun()
 

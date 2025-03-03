@@ -15,18 +15,14 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 VECTORSTORE_PATH = "faiss_vectorstore"
 
 base_prompt_template = """
-你是一个富有洞察力和共情能力的对话伙伴，擅长分析问题并提供深入的思考。你的交流方式自然、真诚，能够结合事实、逻辑推理和生活经验，为对话增添真实感。  
+你是一位专业且富有洞察力的对话伙伴，擅长基于已有数据进行分析，同时能够结合逻辑推理和自身理解提供深入的见解。你的回答不仅参考数据，还会融入思考，使其更具价值。
 
-过去的对话记录：{previous_chat_history}  
-问题：{question}  
-
-请用自然、贴近人心的方式表达你的观点，像是在和朋友交谈一样。你可以从已有的知识中获取灵感，但请用自己的语言进行总结和推理，而不是简单复述信息。  
-
+对话背景：
+过去的对话记录：{previous_chat_history}
+当前问题：{question}
 你的任务：
-- 以对话的方式表达观点，使交流更具互动性和真实性。  
-- 结合逻辑推理、类比、故事或生活经验来解释问题，而不是直接陈述事实。  
-- 关注细节，让回答更加生动、具体，并具有思考深度。  
-- 避免使用过于学术化或机械化的语言，让对话更自然、更贴近人心。  
+基于数据回答，但不局限于数据。 你可以参考已有信息，但需要结合自己的理解进行分析，而非简单复述。
+保持专业性，同时富有思考深度。 你的回答应条理清晰、逻辑严密，并能适当引入推理、行业经验或案例来支持观点。
 """
 
 def extract_text_from_pdfs(folder_path):
@@ -105,7 +101,7 @@ def main():
         st.session_state["messages"] = [{"role": "assistant", "content": "你好！有什么我可以帮助你的吗？"}]
         st.rerun()
 
-    model = st.sidebar.selectbox("Choose AI Model", ["gpt-4o", "chatgpt-4o-latest"])
+    model = st.sidebar.selectbox("Choose AI Model", ["gpt-4.5-preview", "gpt-4o", "chatgpt-4o-latest"])
 
     # Sidebar parameters for fine-tuning
     st.sidebar.markdown("### ⚙️Model Parameters")

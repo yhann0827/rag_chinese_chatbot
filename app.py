@@ -14,7 +14,8 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 VECTORSTORE_PATH = "faiss_vectorstore"
 
-base_prompt_template = """
+if "base_prompt_template" not in st.session_state:
+    st.session_state["base_prompt_template"] = """
 你是一位专业且精准的对话伙伴，擅长从已有信息中提炼核心内容，并以自然、流畅的方式表达。你的回答应基于数据，同时结合逻辑分析，使其清晰、有深度。
 
 对话背景
@@ -22,10 +23,10 @@ base_prompt_template = """
 当前问题：{question}
 
 回答要求
-✅ 数据驱动：回答必须严格基于提供的信息，核心内容不能偏离原始数据。
-✅ 自然表达：无需刻意提及数据来源，直接以清晰流畅的方式回答问题。
-✅ 逻辑严谨：确保回答条理分明，表达精准，避免模糊或主观推测。
-✅ 适量拓展：在不违背数据的前提下，可以结合合理推理和背景知识，使回答更完整。
+数据驱动：回答必须严格基于提供的信息，核心内容不能偏离原始数据。
+自然表达：无需刻意提及数据来源，直接以清晰流畅的方式回答问题。
+逻辑严谨：确保回答条理分明，表达精准，避免模糊或主观推测。
+适量拓展：在不违背数据的前提下，可以结合合理推理和背景知识，使回答更完整。
 """
 
 def extract_text_from_pdfs(folder_path):
@@ -69,12 +70,11 @@ def load_or_create_vectorstore():
     chunks = get_text_chunks(text)  # Split once
     return get_vectorstore(chunks)  # Save and return FAISS
 
-def generate_response(question, chat_history, conversation_chain, additional_prompt):
+def generate_response(question, chat_history, conversation_chain):
     previous_chat_history = "\n".join([f"{message['role']}:{message['content']}" for message in chat_history])
-    full_prompt = base_prompt_template + additional_prompt
-    formatted_prompt = full_prompt.format(previous_chat_history=previous_chat_history, question=question)
+    formatted_prompt = st.session_state["base_prompt_template"].format(previous_chat_history=previous_chat_history, question=question)
     response = conversation_chain.invoke(formatted_prompt)
-    return response["answer"]
+    return response['answer']
 
 def get_conversation_memory(vectorstore, model, temperature, max_tokens, top_p, frequency_penalty):
     llm = ChatOpenAI(
@@ -114,8 +114,9 @@ def main():
     frequency_penalty = st.sidebar.number_input("Frequency Penalty (-2.0 to 2.0)", min_value=-2.0, max_value=2.0, value=0.0, step=0.1)
 
     # Text area for additional instructions
-    additional_prompt = st.sidebar.text_area("Additional Instructions (Optional)", "", height=150)
-    
+    st.session_state["base_prompt_template"] = st.sidebar.text_area("Prompt Template", 
+                                                                    value=st.session_state["base_prompt_template"], 
+                                                                  height=200)
     # Load or create vector store (runs only once)
     vectorstore = load_or_create_vectorstore()
     
@@ -133,7 +134,7 @@ def main():
     if prompt:
         st.chat_message("user").write(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
-        response = generate_response(prompt, st.session_state.messages, conversation_chain, additional_prompt)
+        response = generate_response(prompt, st.session_state.messages, conversation_chain)
         st.chat_message("assistant").write(response)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
